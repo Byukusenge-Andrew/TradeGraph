@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TradeGraph.CatalogService/TradeGraph.CatalogService.csproj" />
+    <Project Path="src/TradeGraph.Gateway/TradeGraph.Gateway.csproj" />
+    <Project Path="src/TradeGraph.GraphService/TradeGraph.GraphService.csproj" />
+    <Project Path="src/TradeGraph.NotificationWorker/TradeGraph.NotificationWorker.csproj" />
+    <Project Path="src/TradeGraph.Shared/TradeGraph.Shared.csproj" />
+  </Folder>
+</Solution>

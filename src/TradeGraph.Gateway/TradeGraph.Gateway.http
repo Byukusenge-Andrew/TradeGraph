@@ -1,0 +1,6 @@
+@TradeGraph.Gateway_HostAddress = http://localhost:5159
+
+GET {{TradeGraph.Gateway_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

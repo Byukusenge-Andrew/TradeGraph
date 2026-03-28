@@ -1,0 +1,6 @@
+@TradeGraph.CatalogService_HostAddress = http://localhost:5139
+
+GET {{TradeGraph.CatalogService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

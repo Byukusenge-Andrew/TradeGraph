@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option csharp_namespace = "TradeGraph.Shared.Protos";
+
+package graph;
+
+service GraphGrpc {
+  rpc AnalyzeImpact (AnalyzeImpactRequest) returns (ImpactResponse);
+  rpc GetSupplyChainHealth (HealthRequest) returns (HealthResponse);
+  rpc CreateAlert (CreateAlertRequest) returns (CreateAlertResponse);
+}
+
+message AnalyzeImpactRequest {
+  string supplier_id = 1;
+  double price_change_percentage = 2;
+}
+
+message AffectedProduct {
+  string product_id = 1;
+  string product_name = 2;
+  double ripple_percentage = 3;
+  int32 hops_from_source = 4;
+}
+
+message ImpactResponse {
+  string supplier_id = 1;
+  repeated AffectedProduct affected_products = 2;
+  double severity_score = 3;
+  int32 total_affected = 4;
+  string analysis_timestamp = 5;
+}
+
+message HealthRequest {}
+
+message HealthResponse {
+  int32 total_suppliers = 1;
+  int32 active_suppliers = 2;
+  int32 total_relationships = 3;
+  int32 open_alerts = 4;
+  double health_score = 5;
+}
+
+message CreateAlertRequest {
+  string title = 1;
+  string message = 2;
+  string severity = 3;
+  string product_id = 4;
+}
+
+message CreateAlertResponse {
+  string alert_id = 1;
+  bool success = 2;
+}
