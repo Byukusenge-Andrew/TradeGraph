@@ -12,14 +12,16 @@ public static class SupplierEndpoints
     {
         var group = app.MapGroup("/api/suppliers").WithTags("Suppliers");
 
-        group.MapGet("/", async (CatalogDbContext db) =>
+        group.MapGet("/", async (CatalogDbContext db,int page =1,int pageSize=20) =>
         {
-            var suppliers = await db.Suppliers
-                .Select(s => new { s.Id, s.Name, s.ContactEmail, s.Region, s.IsActive, s.CreatedAt,
-                    ProductCount = s.Products.Count })
-                .OrderBy(s => s.Name)
-                .ToListAsync();
-            return Results.Ok(suppliers);
+           var total  = await db.Suppliers.CountAsync();
+           var items =  await db.Suppliers
+            .Include(s => s.Products)
+            .OrderBy(s => s.Name)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+           return Results.Ok(new { total, page, pageSize, items }); 
         }).WithSummary("List all suppliers");
 
         group.MapGet("/{id:guid}", async (Guid id, CatalogDbContext db) =>
@@ -43,7 +45,7 @@ public static class SupplierEndpoints
             await bus.PublishAsync("supplier.updated", new SupplierUpdatedEvent(supplier.Id, supplier.Name, supplier.IsActive));
             
             return Results.Created($"/api/suppliers/{supplier.Id}", supplier);
-        }).WithSummary("Create a new supplier");
+        }).RequireAuthorization().WithSummary("Create a new supplier");
 
         group.MapPut("/{id:guid}", async (Guid id, UpdateSupplierRequest req, CatalogDbContext db, IEventBus bus) =>
         {
@@ -58,7 +60,7 @@ public static class SupplierEndpoints
             await bus.PublishAsync("supplier.updated", new SupplierUpdatedEvent(supplier.Id, supplier.Name, supplier.IsActive));
             
             return Results.Ok(supplier);
-        }).WithSummary("Update a supplier");
+        }).RequireAuthorization().WithSummary("Update a supplier");
 
         group.MapDelete("/{id:guid}", async (Guid id, CatalogDbContext db) =>
         {
@@ -67,7 +69,7 @@ public static class SupplierEndpoints
             db.Suppliers.Remove(supplier);
             await db.SaveChangesAsync();
             return Results.NoContent();
-        }).WithSummary("Delete a supplier");
+        }).RequireAuthorization().WithSummary("Delete a supplier");
     }
 }
 

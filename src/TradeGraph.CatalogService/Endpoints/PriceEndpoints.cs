@@ -43,7 +43,7 @@ public static class PriceEndpoints
                 NewPrice = req.NewPrice,
                 ChangedAt = DateTime.UtcNow
             });
-        }).WithSummary("Update product price and publish change event");
+        }).RequireAuthorization().WithSummary("Update product price and publish change event");
     }
 }
 

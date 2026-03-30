@@ -65,3 +65,8 @@ Project.lock.json
 .env.production.local
 appsettings.Development.json
 appsettings.Production.json
+implementation_me.md
+reference_implementations.md
+TESTING.md
+tradegraph.ui/AGENTS.md
+tradegraph.ui/CLAUDE.md

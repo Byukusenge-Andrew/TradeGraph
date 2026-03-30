@@ -7,6 +7,9 @@ using TradeGraph.GraphService.Graph;
 using TradeGraph.GraphService.Services;
 using TradeGraph.GraphService.Workers;
 using TradeGraph.GraphService.Endpoints;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 Env.TraversePath().Load();
 var builder = WebApplication.CreateBuilder(args);
@@ -28,6 +31,24 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 builder.Services.AddSingleton<ImpactAnalyzer>();
 builder.Services.AddHostedService<EventSubscriber>();
 builder.Services.AddGrpc(opt => opt.EnableDetailedErrors = builder.Environment.IsDevelopment());
+
+// JWT Authentication setup natively on Graph Service
+var jwtKey = builder.Configuration["Jwt:Key"] ?? "TradeGraph-SuperSecret-Key-For-Development-Only-12345!";
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+builder.Services.AddAuthorization();
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -40,6 +61,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapGrpcService<GraphGrpcService>();
 app.MapGet("/health", () => Results.Ok(new { status = "healthy", service = "graph-neo4j", timestamp = DateTime.UtcNow }));

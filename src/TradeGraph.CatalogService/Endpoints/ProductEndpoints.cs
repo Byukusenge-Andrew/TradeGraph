@@ -57,7 +57,7 @@ public static class ProductEndpoints
             await bus.PublishAsync("product.updated", new ProductUpdatedEvent(product.Id, product.Name, product.Price, product.SupplierId));
             
             return Results.Created($"/api/products/{product.Id}", product);
-        }).WithSummary("Create a new product");
+        }).RequireAuthorization().WithSummary("Create a new product");
 
         group.MapPut("/{id:guid}", async (Guid id, UpdateProductRequest req, CatalogDbContext db, IEventBus bus) =>
         {
@@ -71,9 +71,12 @@ public static class ProductEndpoints
             await db.SaveChangesAsync();
             
             await bus.PublishAsync("product.updated", new ProductUpdatedEvent(product.Id, product.Name, product.Price, product.SupplierId));
+
+            if (product.StockLevel < 10)
+                await bus.PublishAsync("stock.low", new StockLowEvent(product.Id, product.Name, product.StockLevel, product.SupplierId));
             
             return Results.Ok(product);
-        }).WithSummary("Update a product");
+        }).RequireAuthorization().WithSummary("Update a product");
 
         group.MapDelete("/{id:guid}", async (Guid id, CatalogDbContext db) =>
         {
@@ -82,7 +85,9 @@ public static class ProductEndpoints
             db.Products.Remove(product);
             await db.SaveChangesAsync();
             return Results.NoContent();
-        }).WithSummary("Delete a product");
+        }).RequireAuthorization().WithSummary("Delete a product");
+
+
 
         group.MapGet("/{id:guid}/price-history", async (Guid id, CatalogDbContext db) =>
         {

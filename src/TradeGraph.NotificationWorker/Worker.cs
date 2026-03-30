@@ -49,6 +49,17 @@ public class Worker(
             }
         });
 
+        await sub.SubscribeAsync(RedisChannel.Literal("stock.low"), async (_, message) =>{
+            var ev = JsonSerializer.Deserialize<StockLowEvent>((string)
+            message!, JsonOpts);
+            if(ev is null) return;
+
+            logger.LogWarning(
+                "[STOCK LOW] Product '{Name}' (ID: {Id}) has only {Count} units remaining!",
+                ev.ProductName, ev.ProductId, ev.CurrentStock);
+           await Task.CompletedTask;
+        });
+
         // Wait indefinitely
         await Task.Delay(Timeout.Infinite, stoppingToken);
     }
